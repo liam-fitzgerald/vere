@@ -276,6 +276,7 @@ _main_getopt(c3_i argc, c3_c** argv)
     { "lite-boot",           no_argument,       NULL, 'l' },
     { "keep-cache-limit",    required_argument, NULL, 'M' },
     { "replay-to",           required_argument, NULL, 'n' },
+    { "btc-proxy",           required_argument, NULL, c3__btc },
     { "profile",             no_argument,       NULL, 'P' },
     { "ames-port",           required_argument, NULL, 'p' },
     { "http-port",           required_argument, NULL, c3__http },
@@ -401,6 +402,11 @@ _main_getopt(c3_i argc, c3_c** argv)
         }
         break;
       }
+      case c3__btc: {
+        u3_Host.ops_u.btc_c = strdup(optarg);
+        break;
+      }
+
       //  opts with args
       //
       case 'A': {

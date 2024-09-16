@@ -157,6 +157,7 @@
 #   define c3__brvt   c3_s4('b','r','v','t')
 #   define c3__brwt   c3_s4('b','r','w','t')
 #   define c3__brzp   c3_s4('b','r','z','p')
+#   define c3__btc    c3_s3('b', 't', 'c')
 #   define c3__bud    c3_s3('b','u','d')
 #   define c3__bull   c3_s4('b','u','l','l')
 #   define c3__bump   c3_s4('b','u','m','p')
