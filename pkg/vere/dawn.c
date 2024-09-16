@@ -282,6 +282,137 @@ _dawn_sponsor(u3_noun who, u3_noun rac, u3_noun pot)
   return pos;
 }
 
+u3_noun _dawn_czar_info(c3_c* url_c)
+{
+  u3l_log("boot: retrieving galaxy table");
+
+  u3_noun oct = u3v_wish("czar:give:dawn");
+  u3_noun raz = _dawn_eth_rpc(url_c, u3k(oct));
+
+  u3_noun zar = _dawn_need_unit(u3do("czar:take:dawn", u3k(raz)),
+                        "boot: failed to retrieve galaxy table");
+  u3z(oct); u3z(raz);
+  return zar;
+}
+
+u3_noun _dawn_czar_chain(c3_c* url_c, u3_noun pos)
+{
+  // ignoring rank refcounting bc always direct mote
+  u3_noun pon = u3_nul;          
+  
+  while ( 1 ) {
+    u3_noun rank = u3do("clan:title", u3k(pos));
+    u3_noun son;
+    //  print message
+    //
+    {
+      u3_noun who = u3dc("scot", 'p', u3k(pos));
+      c3_c* who_c = u3r_string(who);
+      u3l_log("boot: retrieving keys for sponsor %s", who_c);
+      u3z(who);
+      c3_free(who_c);
+    }
+
+    //  retrieve +point:azimuth of pos (sponsor of ship)
+    //
+    {
+      u3_noun oct = u3do("point:give:dawn", u3k(pos));
+      u3_noun luh = _dawn_eth_rpc(url_c, u3k(oct));
+
+      son = _dawn_need_unit(u3dc("point:take:dawn", u3k(pos), u3k(luh)),
+                            "boot: failed to retrieve sponsor keys");
+      // append to sponsor chain list
+      //
+      pon = u3nc(u3nc(u3k(pos), u3k(son)), pon);
+      u3z(oct); u3z(luh);
+    }
+
+    // find next sponsor
+    //
+    u3_noun nex = _dawn_sponsor(pos, u3k(rank), u3k(son));
+    if ( c3y == u3r_sing(pos, nex) ) {
+      break;
+    }
+    pos = nex;
+  } 
+
+  return pon;
+}
+
+u3_noun _dawn_turf_info(c3_c* url_c) 
+{
+  u3_noun tuf;
+  //  (list turf): ames domains
+  //
+  if ( 0 != u3_Host.ops_u.dns_c ) {
+    tuf = _dawn_turf(u3_Host.ops_u.dns_c);
+  }
+  else {
+    u3l_log("boot: retrieving network domains");
+
+    u3_noun oct = u3v_wish("turf:give:dawn");
+    u3_noun fut = _dawn_eth_rpc(url_c, u3k(oct));
+
+    tuf = _dawn_need_unit(u3do("turf:take:dawn", u3k(fut)),
+                          "boot: failed to retrieve network domains");
+    u3z(oct); u3z(fut);
+  }
+  return tuf;
+}
+
+
+u3_weak
+u3_dawn_wire(u3_noun ship, u3_noun feed)
+{
+  u3_noun rank = u3do("clan:title", u3k(ship));
+  
+  //  seed
+  u3_noun sed;
+  {
+    u3_noun pot = u3v_wish("*point:azimuth");
+    u3_noun liv = u3_nul;
+    sed  = u3dq("veri:dawn", u3k(ship), u3k(feed), u3k(pot), u3k(liv));
+    u3z(pot); u3z(liv);
+    if ( c3n == u3h(sed) ) {
+      // bails, won't return
+      _dawn_fail(ship, rank, u3t(sed));
+      return u3_none;
+    }
+  }
+  u3l_log("dawn: launching groundwire comet");
+
+  // sponsor
+  u3_noun pos = u3do("^sein:title", u3k(ship));
+  // sponsor list (list [@p @uvH])
+  u3_noun pon = u3_nul; 
+  // galaxy table
+  u3_noun zar; 
+  // turf
+  u3_noun tuf;
+
+
+  c3_c* url_c = ( 0 != u3_Host.ops_u.eth_c ) ?
+    u3_Host.ops_u.eth_c :
+    "https://roller.urbit.org/v1/azimuth";
+
+  zar = _dawn_czar_info(url_c);
+  
+  tuf = _dawn_turf_info(url_c);
+
+  pon = _dawn_czar_chain(url_c, u3k(pos));
+
+  //  [%dawn seed sponsors galaxies domains block eth-url snap]
+  //
+  //NOTE  blocknum of 0 is fine because jael ignores it.
+  //      should probably be removed from dawn event.
+  u3_noun ven = u3nc(c3__dawn,
+                     u3nq(u3k(u3t(sed)), pon, zar, u3nt(tuf, 0, u3_nul)));
+
+  // u3z(sed); u3z(rank); u3z(pos); u3z(ship); u3z(feed);
+
+  return ven;
+}
+
 /* u3_dawn_vent(): validated boot event
 */
 u3_noun
@@ -348,69 +479,14 @@ u3_dawn_vent(u3_noun ship, u3_noun feed)
 
   //  (map ship [=life =pass]): galaxy table
   //
-  {
-    u3l_log("boot: retrieving galaxy table");
+  zar = _dawn_czar_info(url_c);
 
-    u3_noun oct = u3v_wish("czar:give:dawn");
-    u3_noun raz = _dawn_eth_rpc(url_c, u3k(oct));
+  tuf = _dawn_turf_info(url_c);
 
-    zar = _dawn_need_unit(u3do("czar:take:dawn", u3k(raz)),
-                          "boot: failed to retrieve galaxy table");
-    u3z(oct); u3z(raz);
+  if ( rank != c3__czar ) {
+    pon = _dawn_czar_chain(url_c, u3k(pos));
   }
 
-  //  (list turf): ames domains
-  //
-  if ( 0 != u3_Host.ops_u.dns_c ) {
-    tuf = _dawn_turf(u3_Host.ops_u.dns_c);
-  }
-  else {
-    u3l_log("boot: retrieving network domains");
-
-    u3_noun oct = u3v_wish("turf:give:dawn");
-    u3_noun fut = _dawn_eth_rpc(url_c, u3k(oct));
-
-    tuf = _dawn_need_unit(u3do("turf:take:dawn", u3k(fut)),
-                          "boot: failed to retrieve network domains");
-    u3z(oct); u3z(fut);
-  }
-
-  pon = u3_nul;
-  while (c3__czar != rank) {
-    u3_noun son;
-    //  print message
-    //
-    {
-      u3_noun who = u3dc("scot", 'p', u3k(pos));
-      c3_c* who_c = u3r_string(who);
-      u3l_log("boot: retrieving keys for sponsor %s", who_c);
-      u3z(who);
-      c3_free(who_c);
-    }
-
-    //  retrieve +point:azimuth of pos (sponsor of ship)
-    //
-    {
-      u3_noun oct = u3do("point:give:dawn", u3k(pos));
-      u3_noun luh = _dawn_eth_rpc(url_c, u3k(oct));
-
-      son = _dawn_need_unit(u3dc("point:take:dawn", u3k(pos), u3k(luh)),
-                            "boot: failed to retrieve sponsor keys");
-      // append to sponsor chain list
-      //
-      pon = u3nc(u3nc(u3k(pos), u3k(son)), pon);
-      u3z(oct); u3z(luh);
-    }
-
-    // find next sponsor
-    //
-    u3z(ship); u3z(rank);
-    ship = pos;
-    rank = u3do("clan:title", u3k(ship));
-    pos = _dawn_sponsor(u3k(ship), u3k(rank), u3k(son));
-
-    u3z(son);
-  }
 
   //  [%dawn seed sponsors galaxies domains block eth-url snap]
   //

@@ -1497,6 +1497,10 @@
       */
         u3_noun
         u3_dawn_vent(u3_noun ship, u3_noun seed);
+      /* u3_dawn_wire(): validated groundwire boot event
+      */
+        u3_noun
+        u3_dawn_wire(u3_noun ship, u3_noun seed);
 
       /* u3_king_commence(): start the daemon
       */

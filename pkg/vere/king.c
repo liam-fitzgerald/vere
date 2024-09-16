@@ -244,7 +244,11 @@ _king_dawn(u3_noun feed, u3_noun pill, u3_noun path)
   u3_noun ship = ( c3y == u3a_is_cell(u3h(feed)) )
                  ? u3h(u3t(feed))
                  : u3h(feed);
-  u3_noun vent = u3_dawn_vent(u3k(ship), u3k(feed));
+  u3_noun rank = u3do("clan:title", u3k(ship));
+  u3_noun vent = rank == c3__pawn
+    ? u3_dawn_wire(u3k(ship), u3k(feed))
+    : u3_dawn_vent(u3k(ship), u3k(feed));
+
   //  XX link properly
   //
   u3K.pir_u    = u3_pier_boot(sag_w, u3k(ship), vent, pill, path,
