@@ -7,6 +7,7 @@
 #include "curl/curl.h"
 #include "noun.h"
 #include "uv.h"
+#include <types.h>
 
 /* _dawn_oct_to_buf(): +octs to uv_buf_t
 */
@@ -379,7 +380,7 @@ u3_dawn_wire(u3_noun ship, u3_noun feed)
       return u3_none;
     }
   }
-  u3l_log("dawn: launching groundwire comet");
+  u3l_log("boot: launching groundwire comet");
 
   // sponsor
   u3_noun pos = u3do("^sein:title", u3k(ship));
